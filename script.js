@@ -25,7 +25,7 @@ const totalNum = document.querySelector('.total');
 let orderNum = 1;
 let tabPosition = -1;
 
-const product = [];
+const products = [];
 Array.from(tabs).forEach((e,i) => {
   const productName = tabTop[i].innerHTML;
   const productPrice = Number(tabBottom[i].innerHTML).toFixed(2);
@@ -35,16 +35,9 @@ Array.from(tabs).forEach((e,i) => {
     price: productPrice,
     total: productPrice,
   }
-  product.push(productTmp);
-});
-
-const arr = [];
-Array.from(tabs).forEach((e, i) => {
-  const productName = tabTop[i].innerHTML;
-  const productPrice = Number(tabBottom[i].innerHTML).toFixed(2);
-  arr.push([tabTop[i].innerHTML, 1, productPrice, productPrice, ++tabPosition]);
-  if (i == tabTop.length - 1) return;
-  const html = `<div class="row">s
+  products.push(productTmp);
+    if (i == tabTop.length - 1) return;
+    const html = `<div class="row">s
                <div class="Product Area col-md-3">
                ${productName}
             </div>
@@ -61,9 +54,8 @@ Array.from(tabs).forEach((e, i) => {
               X
             </div>
             </div>`;
-  containerMovements.insertAdjacentHTML('beforeend', html);
+    containerMovements.insertAdjacentHTML('beforeend', html);
 });
-
 
 // Controlling the mode button (top button, switching);
 modeButton.forEach((e, i) => {
@@ -112,21 +104,22 @@ tabs[tabs.length - 1].addEventListener('click', function (e) {
 });
 btnCloseAdd.removeEventListener('click', addTab, false);
 
+
 function displayTotal ()
 {
-  let iN = 0;
-  let sTN = 0;
-  let tN = 0;
- arr.forEach((e, i, arr) => {
-   iN += arr[i][1];
-   sTN += Number(arr[i][3] * arr[i][1]);
-   tN = sTN * 0.0825;
- });
- ordersNum.innerHTML = `Order #${orderNum}`;
- itemsNum.innerHTML = `Items: ${iN - 1}`;
- subTotalNum.innerHTML = `SubTotal: ${String(sTN.toFixed(2))}`;
- taxNum.innerHTML = `Tax: ${String(tN.toFixed(2))}`;
- totalNum.innerHTML = `Total: ${String((sTN + tN).toFixed(2))}`
+    let numOfItems = 0;
+    let subTotal = 0;
+    let tax = 0;
+  products.forEach((product) => {
+    numOfItems += product.quantity;
+    subTotal += product.price * product.quantity;
+    tax = subTotal * 0.0825;
+  })
+  ordersNum.innerHTML = `Order #${orderNum}`;
+  itemsNum.innerHTML = `Items: ${numOfItems - 1}`;
+  subTotalNum.innerHTML = `SubTotal: ${String(subTotal.toFixed(2))}`;
+  taxNum.innerHTML = `Tax: ${String(tax.toFixed(2))}`;
+  totalNum.innerHTML = `Total: ${String((subTotal+ tax).toFixed(2))}`;
 }
 
 $(tabs).on('click', takeE);
@@ -140,18 +133,25 @@ function takeE() {
     if (productName === '<br><br>+' || !e.target.parentNode.matches('.leftPage_tab')) {
       console.log('plusE');
       return;
-    } else if (arr.find((e, i, arr) => arr[i][0] === productName)) {
+    } else if (products.find((e) => e.name === productName)) {
       // Area
-      const arrMatch = arr.find((e, i, arr) => arr[i][0] === productName);
-      areaQuantity[arrMatch[4]].innerHTML = ++arrMatch[1];
-      areaTotal[arrMatch[4]].innerHTML = String((arrMatch[3] * arrMatch[1]).toFixed(2));
-      console.log(arr);
+       let productPosition = 0;
+      products.forEach((e , i) => {
+      if (e.name === productName){
+         productPosition = i;
+      }});
+      areaQuantity[productPosition].innerHTML = ++products[productPosition].quantity;
+      areaTotal[productPosition].innerHTML = (products[productPosition].quantity * products[productPosition].price).toFixed(2);
       displayTotal();
     } else {
-      arr.splice(arr.length - 1, 0, [productName, 1, productPrice, productPrice, tabPosition++]);
-      arr[tabs.length - 1][2] = tabPosition;
-       console.log(arr);
-                const html = `<div class="row">
+      const productTmp = {
+      name: productName,
+      quantity: 1,
+      price: productPrice,
+      total: productPrice,
+      }
+      products.splice(products.length - 1, 0, productTmp);
+      const html = `<div class="row">
                      <div class="Product Area col-md-3">
                      ${productName}
                   </div>
@@ -165,7 +165,7 @@ function takeE() {
                     ${productPrice}
                   </div>
                   </div>`;
-                  containerMovements.insertAdjacentHTML('beforeend', html);
+      containerMovements.insertAdjacentHTML('beforeend', html);
       displayTotal();
     }
   };
