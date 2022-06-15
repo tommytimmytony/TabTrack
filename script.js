@@ -32,8 +32,8 @@ Array.from(tabs).forEach((e,i) => {
   const productTmp = {
     name: productName,
     quantity: 1,
-    price: productPrice,
-    total: productPrice,
+    price: Number(productPrice),
+    total: Number(productPrice),
   }
   products.push(productTmp);
     if (i == tabTop.length - 1) return;
@@ -50,13 +50,10 @@ Array.from(tabs).forEach((e,i) => {
             <div class="Total Area col-md-1.5">
               ${productPrice}
             </div>
-            <div class="Delete Area col-md-0.5">
-              X
-            </div>
             </div>`;
     containerMovements.insertAdjacentHTML('beforeend', html);
 });
-
+console.log(products);
 // Controlling the mode button (top button, switching);
 modeButton.forEach((e, i) => {
   modeButton[i].addEventListener('click', function () {
@@ -129,6 +126,7 @@ function takeE() {
     e.preventDefault();
     const productName = e.target.parentNode.children[0].innerHTML;
     const productPrice = Number(e.target.parentNode.children[1].innerHTML).toFixed(2);
+    console.log(products);
     // Plus
     if (productName === '<br><br>+' || !e.target.parentNode.matches('.leftPage_tab')) {
       console.log('plusE');
@@ -147,8 +145,8 @@ function takeE() {
       const productTmp = {
       name: productName,
       quantity: 1,
-      price: productPrice,
-      total: productPrice,
+      price: Number(productPrice),
+      total: Number(productPrice),
       }
       products.splice(products.length - 1, 0, productTmp);
       const html = `<div class="row">
@@ -170,6 +168,25 @@ function takeE() {
     }
   };
 }
+
+let keysPressed = {};
+document.addEventListener('keydown', e => {
+  keysPressed[e.key] = true;
+
+  if (keysPressed['Control'] && e.key == 'z') {
+     const tab = document.getElementById('leftTab');
+     tab.removeChild(tabs[tabs.length - 2]);
+  } else if (keysPressed['Control'] && e.key == 'x') {
+     products.splice(products.length - 2, 1 );
+     containerMovements.removeChild(containerMovements.childNodes[containerMovements.childNodes.length - 1]);
+     console.log(products);
+     displayTotal();
+  }
+});
+
+document.addEventListener('keyup', e => {
+  keysPressed[e.key] = false;
+});
 
 
 
