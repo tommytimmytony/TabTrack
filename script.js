@@ -20,7 +20,16 @@ const itemsNum = document.querySelector('.items');
 const subTotalNum = document.querySelector('.subTotal');
 const taxNum = document.querySelector('.tax');
 const totalNum = document.querySelector('.total');
-
+const btnPay = document.querySelector('.pay');
+const btnHold = document.querySelector('.hold');
+const btnCard = document.querySelector('.Card.select__item');
+const btnCash = document.querySelector('.Cash.select__item');
+const payTab = document.querySelector('.payTab');
+const btnPaid = document.querySelector('.Paid_btn');
+const totalTab = document.querySelector('.total_payTab');
+const inputAmount = document.querySelector('.input.input_Amount');
+const btnCloseInputAmount = document.querySelector('.close_inputAmount_btn');
+const amountText = document.querySelector('.amountText');
 
 let orderNum = 1;
 let tabPosition = -1;
@@ -101,22 +110,23 @@ tabs[tabs.length - 1].addEventListener('click', function (e) {
 });
 btnCloseAdd.removeEventListener('click', addTab, false);
 
-
+  let numOfItems = 0;
+  let subTotal = 0;
+  let tax = 0;
+  let total = 0;
 function displayTotal ()
 {
-    let numOfItems = 0;
-    let subTotal = 0;
-    let tax = 0;
   products.forEach((product) => {
     numOfItems += product.quantity;
     subTotal += product.price * product.quantity;
     tax = subTotal * 0.0825;
+    total = subTotal + tax;
   })
   ordersNum.innerHTML = `Order #${orderNum}`;
   itemsNum.innerHTML = `Items: ${numOfItems - 1}`;
   subTotalNum.innerHTML = `SubTotal: ${String(subTotal.toFixed(2))}`;
   taxNum.innerHTML = `Tax: ${String(tax.toFixed(2))}`;
-  totalNum.innerHTML = `Total: ${String((subTotal+ tax).toFixed(2))}`;
+  totalNum.innerHTML = `Total: ${String((total).toFixed(2))}`;
 }
 
 $(tabs).on('click', takeE);
@@ -188,7 +198,61 @@ document.addEventListener('keyup', e => {
   keysPressed[e.key] = false;
 });
 
+// Pay button
+btnPay.addEventListener('click', (e) => {
+  e.preventDefault();
+  payTab.classList.remove('hidden');
+})
 
+btnCard.addEventListener('click', (e) => {
+  btnCard.classList.add('hidden');
+  btnCash.classList.add('hidden');
+  btnPaid.classList.remove('hidden');
+  totalTab.classList.remove('hidden');
+  totalTab.innerHTML = `$${total.toFixed(2)}`;
+})
+
+btnCash.addEventListener('click', e => {
+  btnCard.classList.add('hidden');
+  btnCash.classList.add('hidden');
+  amountText.classList.remove("hidden");
+  inputAmount.classList.remove('hidden');
+  btnCloseInputAmount.classList.remove('hidden');
+});
+btnPaid.addEventListener('click', e => {
+  payTab.classList.add('hidden');
+  btnCard.classList.remove('hidden');
+  btnCash.classList.remove('hidden');
+  btnPaid.classList.add('hidden');
+  totalTab.classList.add('hidden');
+});
+
+btnCloseInputAmount.addEventListener('click', (e) => {
+  totalTab.classList.remove('hidden');
+  const change = inputAmount.value;
+  totalTab.innerHTML = `$${String(Number(Number(total).toFixed(2) - change).toFixed(2))}`;
+  inputAmount.value = "";
+  inputAmount.classList.add('hidden');
+  btnPaid.classList.remove('hidden');
+  amountText.classList.add('hidden');
+  inputAmount.classList.add('hidden');
+  btnCloseInputAmount.classList.add('hidden');
+
+});
+document.addEventListener('keydown', (e) =>{
+  if(e.key === 'Escape' && !payTab.classList.contains('hidden')){
+    payTab.classList.add('hidden');
+  }
+  if (e.key === 'Escape' && !add.classList.contains('hidden')) {
+    add.classList.add('hidden');
+  }
+});
+
+// Hold button 
+btnHold.addEventListener('click', e => {
+  e.preventDefault();
+  console.log('Hi');
+});
 
 // const displayMovements = function (movements, sort = false) {
 //   containerMovements.innerHTML = '';
