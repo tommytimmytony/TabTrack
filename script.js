@@ -30,11 +30,14 @@ const totalTab = document.querySelector('.total_payTab');
 const inputAmount = document.querySelector('.input.input_Amount');
 const btnCloseInputAmount = document.querySelector('.close_inputAmount_btn');
 const amountText = document.querySelector('.amountText');
+const rowsProducts = document.getElementsByClassName('row');
 
 let orderNum = 1;
 let tabPosition = -1;
 
 const products = [];
+const orders = [];
+
 Array.from(tabs).forEach((e, i) => {
   const productName = tabTop[i].innerHTML;
   const productPrice = Number(tabBottom[i].innerHTML).toFixed(2);
@@ -115,6 +118,11 @@ let subTotal = 0;
 let tax = 0;
 let total = 0;
 function displayTotal() {
+  console.log(products);
+  numOfItems = 0;
+  subTotal = 0;
+  tax = 0;
+  total = 0;
   products.forEach(product => {
     numOfItems += product.quantity;
     subTotal += product.price * product.quantity;
@@ -229,13 +237,22 @@ btnCash.addEventListener('click', e => {
   inputAmount.classList.remove('hidden');
   btnCloseInputAmount.classList.remove('hidden');
 });
+
 btnPaid.addEventListener('click', e => {
   payTab.classList.add('hidden');
   btnCard.classList.remove('hidden');
   btnCash.classList.remove('hidden');
   btnPaid.classList.add('hidden');
   totalTab.classList.add('hidden');
-  products.forEach((e, i, arr) => {});
+  orders.push(products);
+  orderNum++;
+  console.log(orders);
+  let productLength = products.length;
+  for (let i = 0 ; i < productLength - 1; i++ ){
+      products.shift();
+      rowsProducts[1].remove();
+  }
+  displayTotal();
 });
 
 btnCloseInputAmount.addEventListener('click', e => {
