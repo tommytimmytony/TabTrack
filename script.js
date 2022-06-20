@@ -35,7 +35,7 @@ let orderNum = 1;
 let tabPosition = -1;
 
 const products = [];
-Array.from(tabs).forEach((e,i) => {
+Array.from(tabs).forEach((e, i) => {
   const productName = tabTop[i].innerHTML;
   const productPrice = Number(tabBottom[i].innerHTML).toFixed(2);
   const productTmp = {
@@ -43,10 +43,10 @@ Array.from(tabs).forEach((e,i) => {
     quantity: 1,
     price: Number(productPrice),
     total: Number(productPrice),
-  }
+  };
   products.push(productTmp);
-    if (i == tabTop.length - 1) return;
-    const html = `<div class="row">s
+  if (i == tabTop.length - 1) return;
+  const html = `<div class="row">s
                <div class="Product Area col-md-3">
                ${productName}
             </div>
@@ -60,7 +60,7 @@ Array.from(tabs).forEach((e,i) => {
               ${productPrice}
             </div>
             </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
+  containerMovements.insertAdjacentHTML('beforeend', html);
 });
 console.log(products);
 // Controlling the mode button (top button, switching);
@@ -110,23 +110,22 @@ tabs[tabs.length - 1].addEventListener('click', function (e) {
 });
 btnCloseAdd.removeEventListener('click', addTab, false);
 
-  let numOfItems = 0;
-  let subTotal = 0;
-  let tax = 0;
-  let total = 0;
-function displayTotal ()
-{
-  products.forEach((product) => {
+let numOfItems = 0;
+let subTotal = 0;
+let tax = 0;
+let total = 0;
+function displayTotal() {
+  products.forEach(product => {
     numOfItems += product.quantity;
     subTotal += product.price * product.quantity;
     tax = subTotal * 0.0825;
     total = subTotal + tax;
-  })
+  });
   ordersNum.innerHTML = `Order #${orderNum}`;
   itemsNum.innerHTML = `Items: ${numOfItems - 1}`;
   subTotalNum.innerHTML = `SubTotal: ${String(subTotal.toFixed(2))}`;
   taxNum.innerHTML = `Tax: ${String(tax.toFixed(2))}`;
-  totalNum.innerHTML = `Total: ${String((total).toFixed(2))}`;
+  totalNum.innerHTML = `Total: ${String(total.toFixed(2))}`;
 }
 
 $(tabs).on('click', takeE);
@@ -135,29 +134,38 @@ function takeE() {
   window.onclick = e => {
     e.preventDefault();
     const productName = e.target.parentNode.children[0].innerHTML;
-    const productPrice = Number(e.target.parentNode.children[1].innerHTML).toFixed(2);
+    const productPrice = Number(
+      e.target.parentNode.children[1].innerHTML
+    ).toFixed(2);
     console.log(products);
     // Plus
-    if (productName === '<br><br>+' || !e.target.parentNode.matches('.leftPage_tab')) {
+    if (
+      productName === '<br><br>+' ||
+      !e.target.parentNode.matches('.leftPage_tab')
+    ) {
       console.log('plusE');
       return;
-    } else if (products.find((e) => e.name === productName)) {
+    } else if (products.find(e => e.name === productName)) {
       // Area
-       let productPosition = 0;
-      products.forEach((e , i) => {
-      if (e.name === productName){
-         productPosition = i;
-      }});
-      areaQuantity[productPosition].innerHTML = ++products[productPosition].quantity;
-      areaTotal[productPosition].innerHTML = (products[productPosition].quantity * products[productPosition].price).toFixed(2);
+      let productPosition = 0;
+      products.forEach((e, i) => {
+        if (e.name === productName) {
+          productPosition = i;
+        }
+      });
+      areaQuantity[productPosition].innerHTML = ++products[productPosition]
+        .quantity;
+      areaTotal[productPosition].innerHTML = (
+        products[productPosition].quantity * products[productPosition].price
+      ).toFixed(2);
       displayTotal();
     } else {
       const productTmp = {
-      name: productName,
-      quantity: 1,
-      price: Number(productPrice),
-      total: Number(productPrice),
-      }
+        name: productName,
+        quantity: 1,
+        price: Number(productPrice),
+        total: Number(productPrice),
+      };
       products.splice(products.length - 1, 0, productTmp);
       const html = `<div class="row">
                      <div class="Product Area col-md-3">
@@ -184,13 +192,15 @@ document.addEventListener('keydown', e => {
   keysPressed[e.key] = true;
 
   if (keysPressed['Control'] && e.key == 'z') {
-     const tab = document.getElementById('leftTab');
-     tab.removeChild(tabs[tabs.length - 2]);
+    const tab = document.getElementById('leftTab');
+    tab.removeChild(tabs[tabs.length - 2]);
   } else if (keysPressed['Control'] && e.key == 'x') {
-     products.splice(products.length - 2, 1 );
-     containerMovements.removeChild(containerMovements.childNodes[containerMovements.childNodes.length - 1]);
-     console.log(products);
-     displayTotal();
+    products.splice(products.length - 2, 1);
+    containerMovements.removeChild(
+      containerMovements.childNodes[containerMovements.childNodes.length - 1]
+    );
+    console.log(products);
+    displayTotal();
   }
 });
 
@@ -199,23 +209,23 @@ document.addEventListener('keyup', e => {
 });
 
 // Pay button
-btnPay.addEventListener('click', (e) => {
+btnPay.addEventListener('click', e => {
   e.preventDefault();
   payTab.classList.remove('hidden');
-})
+});
 
-btnCard.addEventListener('click', (e) => {
+btnCard.addEventListener('click', e => {
   btnCard.classList.add('hidden');
   btnCash.classList.add('hidden');
   btnPaid.classList.remove('hidden');
   totalTab.classList.remove('hidden');
   totalTab.innerHTML = `$${total.toFixed(2)}`;
-})
+});
 
 btnCash.addEventListener('click', e => {
   btnCard.classList.add('hidden');
   btnCash.classList.add('hidden');
-  amountText.classList.remove("hidden");
+  amountText.classList.remove('hidden');
   inputAmount.classList.remove('hidden');
   btnCloseInputAmount.classList.remove('hidden');
 });
@@ -225,22 +235,24 @@ btnPaid.addEventListener('click', e => {
   btnCash.classList.remove('hidden');
   btnPaid.classList.add('hidden');
   totalTab.classList.add('hidden');
+  products.forEach((e, i, arr) => {});
 });
 
-btnCloseInputAmount.addEventListener('click', (e) => {
+btnCloseInputAmount.addEventListener('click', e => {
   totalTab.classList.remove('hidden');
   const change = inputAmount.value;
-  totalTab.innerHTML = `$${String(Number(Number(total).toFixed(2) - change).toFixed(2))}`;
-  inputAmount.value = "";
+  totalTab.innerHTML = `$${String(
+    Number(Number(total).toFixed(2) - change).toFixed(2)
+  )}`;
+  inputAmount.value = '';
   inputAmount.classList.add('hidden');
   btnPaid.classList.remove('hidden');
   amountText.classList.add('hidden');
   inputAmount.classList.add('hidden');
   btnCloseInputAmount.classList.add('hidden');
-
 });
-document.addEventListener('keydown', (e) =>{
-  if(e.key === 'Escape' && !payTab.classList.contains('hidden')){
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !payTab.classList.contains('hidden')) {
     payTab.classList.add('hidden');
   }
   if (e.key === 'Escape' && !add.classList.contains('hidden')) {
@@ -248,7 +260,7 @@ document.addEventListener('keydown', (e) =>{
   }
 });
 
-// Hold button 
+// Hold button
 btnHold.addEventListener('click', e => {
   e.preventDefault();
   console.log('Hi');
@@ -274,7 +286,6 @@ btnHold.addEventListener('click', e => {
 //     containerMovements.insertAdjacentHTML('afterbegin', html);
 //   });
 // };
-
 
 //Tabs
 //     tabsMovements.addEventListener('click', function (e)
