@@ -40,13 +40,11 @@ const leftTabOrders = document.getElementById('leftTabOrders');
 const ordersTopTab = document.getElementsByClassName('orders_top_tab');
 const ordersBottomTab = document.getElementsByClassName('orders_bottom_tab');
 
-// history button 
+// history button
 const movementsRowsHistory = document.getElementsByClassName(
   'rows.movements__row_history'
 );
-const movementsHistory = document.getElementById(
-  'movements_history'
-);
+const movementsHistory = document.getElementById('movements_history');
 let orderNum = 1;
 let tabPosition = -1;
 const historyStorage = [];
@@ -89,9 +87,19 @@ modeButton.forEach((e, i) => {
     modeButton.forEach(element => {
       element.classList.remove('active');
     });
-
+    if (historyIsAcitve == true){
+      let productLength = products.length;
+     for (let i = 0; i < productLength - 1; i++) {
+       products.shift();
+       rowsProducts[1].remove();
+     }
+     orderNum = largestOrderNumber;
+     displayTotal();
+     historyIsAcitve = false;
+    }
     mode[i].classList.remove('hidden');
     modeButton[i].classList.add('active');
+    largestOrderNumber = Math.max(largestOrderNumber, orderNum);
   });
 });
 
@@ -235,31 +243,36 @@ document.addEventListener('keydown', e => {
   } else if (keysPressed['Control'] && e.key == 'x') {
     if (containerMovements.childNodes.length == 0 || products.length == 1)
       return;
-    if (restoreDeleteProducts.find(e => e.ordersNum === orderNum)){
-        restoreDeleteProducts.forEach( e => {
-          if (e.ordersNum === orderNum){
-            e.productsDeleted.push(products.at(-2));
-          }
-        });
-         restoreDeleteItemsMovements.forEach( e => {
-          if (e.ordersNum === orderNum){
-            e.itemDeleted.push(containerMovements.childNodes[containerMovements.childNodes.length - 1]);
-          }
-        })
-    }
-    else{
-    const productTmp = {
-      ordersNum: orderNum,
-      productsDeleted: [products.at(-2)]
-    };
-    const itemTmp = {
-      ordersNum: orderNum,
-      itemDeleted: [
-        containerMovements.childNodes[containerMovements.childNodes.length - 1],
-      ],
-    };
-    restoreDeleteProducts.push(productTmp);
-    restoreDeleteItemsMovements.push(itemTmp);
+    if (restoreDeleteProducts.find(e => e.ordersNum === orderNum)) {
+      restoreDeleteProducts.forEach(e => {
+        if (e.ordersNum === orderNum) {
+          e.productsDeleted.push(products.at(-2));
+        }
+      });
+      restoreDeleteItemsMovements.forEach(e => {
+        if (e.ordersNum === orderNum) {
+          e.itemDeleted.push(
+            containerMovements.childNodes[
+              containerMovements.childNodes.length - 1
+            ]
+          );
+        }
+      });
+    } else {
+      const productTmp = {
+        ordersNum: orderNum,
+        productsDeleted: [products.at(-2)],
+      };
+      const itemTmp = {
+        ordersNum: orderNum,
+        itemDeleted: [
+          containerMovements.childNodes[
+            containerMovements.childNodes.length - 1
+          ],
+        ],
+      };
+      restoreDeleteProducts.push(productTmp);
+      restoreDeleteItemsMovements.push(itemTmp);
     }
     //  const ordersDisplay = ordersHolder.find(
     // element => element.displayOrdersNum == orderNumber
@@ -281,15 +294,15 @@ document.addEventListener('keydown', e => {
     tab.appendChild(restoreDeleteTab.pop());
     tab.appendChild(plus);
   } else if (keysPressed['Control'] && e.key == 'v') {
-    if (restoreDeleteItemsMovements.length == 0)
-      return;
+    if (restoreDeleteItemsMovements.length == 0) return;
     const restoreProducts = restoreDeleteProducts.find(
-    element => element.ordersNum == orderNum);
+      element => element.ordersNum == orderNum
+    );
     const restoreItems = restoreDeleteItemsMovements.find(
       element => element.ordersNum == orderNum
     );
     if (restoreProducts.productsDeleted.length == 0) return;
-      console.log(restoreProducts.productsDeleted.length);
+    console.log(restoreProducts.productsDeleted.length);
     console.log(restoreItems);
     containerMovements.appendChild(restoreItems.itemDeleted.pop());
     const productPlus = products.pop();
@@ -306,10 +319,10 @@ document.addEventListener('keyup', e => {
 // Pay button
 btnPay.addEventListener('click', e => {
   e.preventDefault();
-   if (!modeButton[0].classList.contains('active')) {
-     console.log('Please go to MENU inorder to checkout');
-     return;
-   }
+  if (!modeButton[0].classList.contains('active')) {
+    console.log('Please go to MENU inorder to checkout');
+    return;
+  }
   payTab.classList.remove('hidden');
 });
 
@@ -329,7 +342,6 @@ btnCash.addEventListener('click', e => {
   btnCloseInputAmount.classList.remove('hidden');
 });
 
-
 btnPaid.addEventListener('click', e => {
   payTab.classList.add('hidden');
   btnCard.classList.remove('hidden');
@@ -342,8 +354,8 @@ btnPaid.addEventListener('click', e => {
   console.log(orderNum);
   const historyTmp = {
     historyNumber: orderNum,
-    historyProducts: products.slice()
-  }
+    historyProducts: products.slice(),
+  };
   historyStorage.push(historyTmp);
   let productLength = products.length;
   let tabPosition = -1;
@@ -353,19 +365,23 @@ btnPaid.addEventListener('click', e => {
     rowsProducts[1].remove();
   }
   const tab = document.getElementById('leftTabOrders');
-  if (ordersTopTab.length != 0){
-  Array.from(ordersTopTab).forEach((el, i) => {
+  if (ordersTopTab.length != 0) {
+    Array.from(ordersTopTab).forEach((el, i) => {
       console.log(el.innerHTML.trim());
-    if (el.innerHTML.trim() === orderNumber) {
-      tabPosition = i;
-      console.log(i);
-    }
-  });
-  tab.removeChild(leftPageTabOrders[tabPosition]);
+      if (el.innerHTML.trim() === orderNumber) {
+        tabPosition = i;
+        console.log(i);
+      }
+    });
+    tab.removeChild(leftPageTabOrders[tabPosition]);
   }
   addRowHistory();
-  if (largestOrderNumber != orderNum){
+  largestOrderNumber = Math.max(largestOrderNumber, orderNum);
+  if (largestOrderNumber != orderNum) {
     orderNum = largestOrderNumber;
+  }
+  if (ordersTopTab.length == 0) {
+    orderNum++;
   }
   displayTotal();
 });
@@ -500,7 +516,6 @@ window.addEventListener('click', function (e) {
   displayTotal();
 });
 
-
 // HISTORY functions
 function addRowHistory() {
   const orderNumber = `Orders ${orderNum}`;
@@ -508,27 +523,41 @@ function addRowHistory() {
   const row = document.createElement('div');
   const col1 = document.createElement('div');
   const col2 = document.createElement('div');
+  let today = new Date();
+  let dd = String(today.getDate()).padStart(2, '0');
+  let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+  let yyyy = today.getFullYear();
+
+  today = mm + '/' + dd + '/' + yyyy;
   row.className = 'row movements__row_history';
   col1.className = 'col-md-7';
   col1.innerHTML = orderNumber;
   col2.className = 'col-md-3';
-  col2.innerHTML = '00/00/0000';
+  col2.innerHTML = today;
   row.appendChild(col1);
   row.appendChild(col2);
   movements.appendChild(row);
 }
 
-window.addEventListener('click', function(e) {
-  console.log(e.target.parentNode.children[0].innerHTML)
-
+let historyIsAcitve = false;
+window.addEventListener('click', function (e) {
   const historyNumber = Number(
     e.target.parentNode.children[0].innerHTML.slice(-1)
   );
   const historyDisplay = historyStorage.find(
     element => element.historyNumber == historyNumber
   );
+   const productLength = products.length;
+   if (modeButton[2].classList.contains('active') && historyDisplay != undefined) {
+     for (let i = 0; i < productLength - 1; i++) {
+       products.shift();
+       rowsProducts[1].remove();
+     }
+     displayTotal();
+   }
   console.log(historyDisplay);
-
+  if (historyDisplay == undefined) return;
+  const plus = products.pop();
   historyDisplay.historyProducts.forEach(el => {
     if (el.name === '<br><br>+') return;
     products.push(el);
@@ -548,7 +577,13 @@ window.addEventListener('click', function(e) {
             </div>`;
     containerMovements.insertAdjacentHTML('beforeend', html);
   });
-})
+  products.push(plus);
+  console.log(products);
+  orderNum = historyNumber;
+  historyIsAcitve = true;
+  displayTotal();
+});
+
 // const movementsRowsHistory = document.getElementsByClassName(
 //   'row.movements__row_history'
 // );
@@ -556,10 +591,6 @@ window.addEventListener('click', function(e) {
 // Array.from(movementsRowsHistory).for
 // const displayMovements = function (movements, sort = false) {
 //   containerMovements.innerHTML = '';
-
-
-
-
 
 //   const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
 
