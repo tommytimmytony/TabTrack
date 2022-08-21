@@ -167,6 +167,9 @@
   display: flex;
 }
 
+.rightPage_bottom{
+  padding-top: 1rem;
+}
 .top_button{
  border-style: groove;
  width: 33%;
@@ -185,7 +188,7 @@
   color: red;
   word-spacing: 4.2rem;
   text-align: center;
-  word-wrap: break-word;
+  word-wrap: nowrap;
 }
 
 .Total {
@@ -201,13 +204,17 @@
   text-align: center;
 }
 
+.row.PQET{
+  padding-right: 10px;
+}
+
 .movements {
   grid-row: 2 / span 3;
   background-color: #fff;
   overflow: scroll;
   overflow-x: hidden;
-  height: 58vh;
-  padding: 0;
+  height: 50vh;
+  padding-right: 10px;
   margin: 0;
 }
 

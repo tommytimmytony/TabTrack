@@ -32,6 +32,7 @@ const btnCloseInputAmount = document.querySelector('.close_inputAmount_btn');
 const amountText = document.querySelector('.amountText');
 const rowsProducts = document.getElementsByClassName('row PQET');
 console.log(rowsProducts);
+
 // hold button
 const leftPageTabOrders = document.getElementsByClassName(
   'orders_leftPage_tab'
@@ -46,38 +47,113 @@ const movementsRowsHistory = document.getElementsByClassName(
 );
 const movementsHistory = document.getElementById('movements_history');
 let orderNum = 1;
-let tabPosition = -1;
-const historyStorage = [];
+//let tabPosition = -1;
+let historyStorage = [];
 const products = [];
-const ordersHolder = [];
+let ordersHolder = [];
 // Menu functions
-Array.from(tabs).forEach((e, i) => {
-  const productName = tabTop[i].innerHTML;
-  const productPrice = Number(tabBottom[i].innerHTML).toFixed(2);
-  const productTmp = {
-    name: productName,
-    quantity: 1,
-    price: Number(productPrice),
-    total: Number(productPrice),
-  };
-  products.push(productTmp);
-  if (i == tabTop.length - 1) return;
-  const html = `<div class="row PQET">
-               <div class="Product Area col-md-3">
-               ${productName}
-            </div>
-            <div class="Quantity Area col-md-3">
-              ${1}
-            </div>
-            <div class="Area col-md-3">
-              ${productPrice}
-            </div>
-            <div class="Total Area col-md-1.5">
-              ${productPrice}
-            </div>
-            </div>`;
-  containerMovements.insertAdjacentHTML('beforeend', html);
-});
+const initialProducts = {
+  product1: {
+    name: 'Apple',
+    price: 4.25,
+  },
+  product2: {
+    name: 'Banana',
+    price: 5.99,
+  },
+  product3: {
+    name: 'Orange',
+    price: 10.0,
+  },
+  product4: {
+    name: 'Watermelons',
+    price: 4.99,
+  },
+  product5: {
+    name: 'Kiwi',
+    price: 3.0,
+  },
+  product6: {
+    name: 'Mango',
+    price: 2.0,
+  },
+};
+
+function restore(name, price) {
+  const productName = name;
+  const productPrice = Number(price).toFixed(2);
+  if (
+    Array.from(tabTop).find(
+      e => e.innerHTML.toLowerCase() === productName.toLowerCase()
+    )
+  ) {
+    console.log('Found Duplicate');
+    return;
+  }
+  const tab = document.getElementById('leftTabMenu');
+  const button = document.createElement('button');
+  const children1 = document.createElement('div');
+  const children2 = document.createElement('div');
+  button.className = 'leftPage_tab';
+  children1.className = 'top_tab';
+  children1.innerHTML = productName;
+  children2.className = 'bottom_tab';
+  children2.innerHTML = productPrice.toString();
+  button.appendChild(children1);
+  button.appendChild(children2);
+  const plus = tab.removeChild(tabs[tabs.length - 1]);
+  tab.appendChild(button);
+  tab.appendChild(plus);
+}
+
+if (localStorage.getItem('Menu') === null) {
+  console.log(localStorage.getItem('Menu') === null);
+  console.log('initilizing...');
+}
+if (localStorage.getItem('Menu') === null) {
+  for (const product in initialProducts) {
+    restore(initialProducts[product].name, initialProducts[product].price);
+  }
+  for (const product in initialProducts) {
+    const productName = initialProducts[product].name;
+    const productPrice = initialProducts[product].price.toFixed(2);
+    const productTmp = {
+      name: productName,
+      quantity: 1,
+      price: Number(productPrice),
+      total: Number(productPrice),
+    };
+    products.push(productTmp);
+    updateMovements(productTmp);
+  }
+  localStorage.setItem('Menu', '[]');
+  localStorage.setItem('Orders', '[]');
+  localStorage.setItem('History', '[]');
+  let data = JSON.parse(localStorage.getItem('Menu'));
+  data = products.slice();
+  localStorage.setItem('Menu', JSON.stringify(data));
+} else {
+  const products = JSON.parse(localStorage.getItem('Menu'));
+  for (const product in products) {
+    restore(products[product].name, products[product].price);
+  }
+  const orders = JSON.parse(localStorage.getItem('Orders'));
+  for (const order in orders) {
+    addRemoveTabOrder(orders[order].OrdersNum);
+  }
+  ordersHolder = orders.slice();
+  const histories = JSON.parse(localStorage.getItem('History'));
+  for (const history in histories ){
+    addRowHistory(
+      histories[history].historyNumber,
+      histories[history].date.day,
+      histories[history].date.month,
+      histories[history].date.year
+    );
+  }
+  historyStorage = histories.slice();
+}
+
 // Controlling the mode button (top button, switching);
 modeButton.forEach((e, i) => {
   modeButton[i].addEventListener('click', function () {
@@ -87,15 +163,15 @@ modeButton.forEach((e, i) => {
     modeButton.forEach(element => {
       element.classList.remove('active');
     });
-    if (historyIsAcitve == true){
+    if (historyIsAcitve == true) {
       let productLength = products.length;
-     for (let i = 0; i < productLength - 1; i++) {
-       products.shift();
-       rowsProducts[1].remove();
-     }
-     orderNum = largestOrderNumber;
-     displayTotal();
-     historyIsAcitve = false;
+      for (let i = 0; i < productLength - 1; i++) {
+        products.shift();
+        rowsProducts[1].remove();
+      }
+      orderNum = largestOrderNumber;
+      displayTotal();
+      historyIsAcitve = false;
     }
     mode[i].classList.remove('hidden');
     modeButton[i].classList.add('active');
@@ -112,6 +188,11 @@ function addTab() {
     )
   ) {
     alert('Duplicate Tab not allowed');
+    add.classList.add('hidden');
+    return;
+  }
+  if (productName === '') {
+    console.log('Please enter a name');
     add.classList.add('hidden');
     return;
   }
@@ -133,8 +214,20 @@ function addTab() {
   tab.appendChild(button);
   tab.appendChild(plus);
   add.classList.add('hidden');
+
+  // local Storage
+  const productTmp = {
+    name: productName,
+    quantity: 1,
+    price: Number(productPrice),
+    total: Number(productPrice),
+  };
+  const data = JSON.parse(localStorage.getItem('Menu'));
+  data.push(productTmp);
+  localStorage.setItem('Menu', JSON.stringify(data));
 }
 
+// PLus tab
 tabs[tabs.length - 1].addEventListener('click', function (e) {
   console.log('PLUS');
   add.classList.remove('hidden');
@@ -149,7 +242,6 @@ let subTotal = 0;
 let tax = 0;
 let total = 0;
 function displayTotal() {
-  console.log(products);
   numOfItems = 0;
   subTotal = 0;
   tax = 0;
@@ -161,13 +253,15 @@ function displayTotal() {
     total = subTotal + tax;
   });
   displayOrdersNum.innerHTML = `Order #${orderNum}`;
-  itemsNum.innerHTML = `Items: ${numOfItems - 1}`;
+  itemsNum.innerHTML = `Items: ${numOfItems}`;
   subTotalNum.innerHTML = `SubTotal: ${String(subTotal.toFixed(2))}`;
   taxNum.innerHTML = `Tax: ${String(tax.toFixed(2))}`;
   totalNum.innerHTML = `Total: ${String(total.toFixed(2))}`;
 }
+
 displayTotal();
-window.addEventListener('click', function (e) {
+
+document.addEventListener('click', function (e) {
   e.preventDefault();
   const productName = e.target.parentNode.children[0].innerHTML;
   const productPrice = Number(
@@ -183,24 +277,24 @@ window.addEventListener('click', function (e) {
   } else if (
     products.find(e => e.name.toLowerCase() === productName.toLowerCase())
   ) {
-    // Area
-    const product = products.find(
+    // movement container
+    const productObject = products.find(
       e => e.name.toLowerCase() === productName.toLowerCase()
     );
-    let productPosition = 0;
-    console.log(areaProduct);
-    Array.from(areaProduct).forEach((e, i) => {
-      if (e.innerHTML.trim() === productName) {
-        productPosition = i;
-        console.log(i);
-      }
-    });
-    areaQuantity[productPosition].innerHTML = ++products[productPosition]
-      .quantity;
-    areaTotal[productPosition].innerHTML = (
-      products[productPosition].quantity * products[productPosition].price
+    const productRows = Array.from(rowsProducts).find(
+      e =>
+        e.childNodes[1].innerHTML.toLowerCase().trim() ===
+        productName.toLowerCase()
+    );
+
+    productRows.childNodes[3].innerHTML = ++productObject.quantity;
+    productRows.childNodes[7].innerHTML = (
+      productObject.quantity * productObject.price
     ).toFixed(2);
     displayTotal();
+    productObject.total = Number(
+      (productObject.quantity * productObject.price).toFixed(2)
+    );
   } else {
     const productTmp = {
       name: productName,
@@ -208,84 +302,55 @@ window.addEventListener('click', function (e) {
       price: Number(productPrice),
       total: Number(productPrice),
     };
-    products.splice(products.length - 1, 0, productTmp);
-    const html = `<div class="row PQET">
-                     <div class="Product Area col-md-3">
-                     ${productName}
-                  </div>
-                  <div class="Quantity Area col-md-3">
-                    ${1}
-                  </div>
-                  <div class="Area col-md-3">
-                    ${productPrice}
-                  </div>
-                  <div class="Total Area col-md-1.5">
-                     ${productPrice}
-                  </div>
-                  </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
+    products.push(productTmp);
+    updateMovements(productTmp);
     displayTotal();
   }
 });
 
-const restoreDeleteTab = [];
-const restoreDeleteItemsMovements = [];
-const restoreDeleteProducts = [];
-let keysPressed = {};
-document.addEventListener('keydown', e => {
-  keysPressed[e.key] = true;
+function updateMovements(restore) {
+  const html = `<div class="row PQET">
+                     <div class="Product Area col-md-3">
+                     ${restore.name}
+                  </div>
+                  <div class="Quantity Area col-md-3">
+                    ${restore.quantity}
+                  </div>
+                  <div class="Area col-md-3">
+                    ${restore.price.toFixed(2)}
+                  </div>
+                  <div class="Total Area col-md-1.5">
+                     ${restore.total.toFixed(2)}
+                  </div>
+                  </div>`;
+  containerMovements.insertAdjacentHTML('beforeend', html);
+}
 
+// if reset it gone
+const restoreDeleteTab = [];
+const restoreDeleteProducts = [];
+const restoreLocalStorage = [];
+let keysPressed = {};
+// const arr = [1,2,3,4];
+//   console.log(arr.splice(2,1));
+//   console.log(arr);
+document.addEventListener('keydown', e => {
+  if(!modeButton[0].classList.contains('active')) return;
+  keysPressed[e.key] = true;
   if (keysPressed['Control'] && e.key == 'z') {
     if (tabs.length == 1) return;
     restoreDeleteTab.push(tabs[tabs.length - 2]);
     tabsMenu.removeChild(tabs[tabs.length - 2]);
-    console.log(restoreDeleteTab);
+    //local Storage
+    const data = JSON.parse(localStorage.getItem('Menu'));
+    restoreLocalStorage.push(data.pop());
+    localStorage.setItem('Menu', JSON.stringify(data));
   } else if (keysPressed['Control'] && e.key == 'x') {
-    if (containerMovements.childNodes.length == 0 || products.length == 1)
-      return;
-    if (restoreDeleteProducts.find(e => e.ordersNum === orderNum)) {
-      restoreDeleteProducts.forEach(e => {
-        if (e.ordersNum === orderNum) {
-          e.productsDeleted.push(products.at(-2));
-        }
-      });
-      restoreDeleteItemsMovements.forEach(e => {
-        if (e.ordersNum === orderNum) {
-          e.itemDeleted.push(
-            containerMovements.childNodes[
-              containerMovements.childNodes.length - 1
-            ]
-          );
-        }
-      });
-    } else {
-      const productTmp = {
-        ordersNum: orderNum,
-        productsDeleted: [products.at(-2)],
-      };
-      const itemTmp = {
-        ordersNum: orderNum,
-        itemDeleted: [
-          containerMovements.childNodes[
-            containerMovements.childNodes.length - 1
-          ],
-        ],
-      };
-      restoreDeleteProducts.push(productTmp);
-      restoreDeleteItemsMovements.push(itemTmp);
-    }
-    //  const ordersDisplay = ordersHolder.find(
-    // element => element.displayOrdersNum == orderNumber
-    // restoreDeleteProducts.push()
-    // restoreDeleteProducts.push(products.at(-2));
-    products.splice(products.length - 2, 1);
-    // restoreDeleteItemsMovements.push(
-    //   containerMovements.childNodes[containerMovements.childNodes.length - 1]
-    // );
-    containerMovements.removeChild(
-      containerMovements.childNodes[containerMovements.childNodes.length - 1]
-    );
-    console.log(restoreDeleteProducts);
+    if (rowsProducts.length < 2) return;
+    //const productRows = rowsProducts[rowsProducts.length - 1];
+    restoreDeleteProducts.push(products[products.length - 1]);
+    products.splice(products.length - 1, 1);
+    containerMovements.removeChild(rowsProducts[rowsProducts.length - 1]);
     displayTotal();
   } else if (keysPressed['Control'] && e.key == 'c') {
     if (restoreDeleteTab.length == 0) return;
@@ -293,25 +358,18 @@ document.addEventListener('keydown', e => {
     const plus = tabsMenu.removeChild(tabs[tabs.length - 1]);
     tab.appendChild(restoreDeleteTab.pop());
     tab.appendChild(plus);
+    // local Storage
+    const data = JSON.parse(localStorage.getItem('Menu'));
+    data.push(restoreLocalStorage.pop());
+    localStorage.setItem('Menu', JSON.stringify(data));
   } else if (keysPressed['Control'] && e.key == 'v') {
-    if (restoreDeleteItemsMovements.length == 0) return;
-    const restoreProducts = restoreDeleteProducts.find(
-      element => element.ordersNum == orderNum
-    );
-    const restoreItems = restoreDeleteItemsMovements.find(
-      element => element.ordersNum == orderNum
-    );
-    if (restoreProducts.productsDeleted.length == 0) return;
-    console.log(restoreProducts.productsDeleted.length);
-    console.log(restoreItems);
-    containerMovements.appendChild(restoreItems.itemDeleted.pop());
-    const productPlus = products.pop();
-    products.push(restoreProducts.productsDeleted.pop());
-    products.push(productPlus);
+    if (restoreDeleteProducts.length == 0) return;
+    const restoreItem = restoreDeleteProducts.pop();
+    products.push(restoreItem);
+    updateMovements(restoreItem);
     displayTotal();
   }
 });
-
 document.addEventListener('keyup', e => {
   keysPressed[e.key] = false;
 });
@@ -342,50 +400,6 @@ btnCash.addEventListener('click', e => {
   btnCloseInputAmount.classList.remove('hidden');
 });
 
-btnPaid.addEventListener('click', e => {
-  payTab.classList.add('hidden');
-  btnCard.classList.remove('hidden');
-  btnCash.classList.remove('hidden');
-  btnPaid.classList.add('hidden');
-  totalTab.classList.add('hidden');
-  // History == ordersHolder.push(products);
-  console.log(orders);
-  console.log(ordersTopTab);
-  console.log(orderNum);
-  const historyTmp = {
-    historyNumber: orderNum,
-    historyProducts: products.slice(),
-  };
-  historyStorage.push(historyTmp);
-  let productLength = products.length;
-  let tabPosition = -1;
-  const orderNumber = `Orders ${orderNum}`;
-  for (let i = 0; i < productLength - 1; i++) {
-    products.shift();
-    rowsProducts[1].remove();
-  }
-  const tab = document.getElementById('leftTabOrders');
-  if (ordersTopTab.length != 0) {
-    Array.from(ordersTopTab).forEach((el, i) => {
-      console.log(el.innerHTML.trim());
-      if (el.innerHTML.trim() === orderNumber) {
-        tabPosition = i;
-        console.log(i);
-      }
-    });
-    tab.removeChild(leftPageTabOrders[tabPosition]);
-  }
-  addRowHistory();
-  largestOrderNumber = Math.max(largestOrderNumber, orderNum);
-  if (largestOrderNumber != orderNum) {
-    orderNum = largestOrderNumber;
-  }
-  if (ordersTopTab.length == 0) {
-    orderNum++;
-  }
-  displayTotal();
-});
-
 btnCloseInputAmount.addEventListener('click', e => {
   totalTab.classList.remove('hidden');
   const change = inputAmount.value;
@@ -399,6 +413,7 @@ btnCloseInputAmount.addEventListener('click', e => {
   inputAmount.classList.add('hidden');
   btnCloseInputAmount.classList.add('hidden');
 });
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !payTab.classList.contains('hidden')) {
     payTab.classList.add('hidden');
@@ -410,53 +425,53 @@ document.addEventListener('keydown', e => {
 
 let largestOrderNumber = 0;
 // Hold button
+
 btnHold.addEventListener('click', e => {
   if (modeButton[1].classList.contains('active')) {
     console.log('Error trying to duplicate hold');
+    alert('Please return to Menu first');
     return;
   }
-  console.log(orderNum);
-  console.log(ordersHolder.displayOrdersNum);
   e.preventDefault();
   console.log('Hold');
-  console.log(products);
   const orderTmp = {
-    displayOrdersNum: orderNum,
+    OrdersNum: orderNum,
     productsSummary: products.slice(),
   };
-  if (ordersHolder.find(e => e.displayOrdersNum === orderNum)) {
-    ordersHolder.forEach((el, i) => {
-      if (el.displayOrdersNum === orderNum) {
-        ordersHolder.splice(i, 1);
-      }
-    });
-  }
+  // updating ordersNum && data in local Storage
+  const data = JSON.parse(localStorage.getItem('Orders'));
+  ordersHolder.forEach((el, i) => {
+    if (el.OrdersNum === orderNum) {
+      ordersHolder.splice(i, 1);
+      data.splice(i, 1);
+    }
+  });
   ordersHolder.push(orderTmp);
-  console.log(products);
-  console.log(ordersHolder);
-  let productLength = products.length;
-  for (let i = 0; i < productLength - 1; i++) {
+  data.push(orderTmp);
+  localStorage.setItem('Orders', JSON.stringify(data));
+
+  while (products.length != 0) {
     products.shift();
     rowsProducts[1].remove();
   }
-  addRemoveTabOrder();
+  addRemoveTabOrder(orderNum);
   largestOrderNumber = Math.max(largestOrderNumber, orderNum);
+  orderNum = largestOrderNumber;
   displayTotal();
 });
 
 // Hold functions
-function addRemoveTabOrder() {
-  const orderNumber = `Orders ${orderNum}`;
+function addRemoveTabOrder(number) {
+  const orderNumber = `Orders ${number}`;
   const tab = document.getElementById('leftTabOrders');
-  let tabPosition = -1;
-  if (Array.from(ordersTopTab).find(el => el.innerHTML === orderNumber)) {
-    Array.from(ordersTopTab).forEach((el, i) => {
-      if (el.innerHTML.trim() === orderNumber) {
-        tabPosition = i;
-      }
-    });
-    tab.removeChild(leftPageTabOrders[tabPosition]);
-  }
+
+  //Removing old order tab
+  Array.from(ordersTopTab).forEach((el, i) => {
+    if (el.innerHTML.trim() === orderNumber) {
+      tab.removeChild(leftPageTabOrders[i]);
+    }
+  });
+
   const button = document.createElement('button');
   const children1 = document.createElement('div');
   const children2 = document.createElement('div');
@@ -470,65 +485,102 @@ function addRemoveTabOrder() {
   tab.appendChild(button);
   orderNum++;
 }
-console.log(products);
-function displayHoldOrder(productsSummary) {}
 
-window.addEventListener('click', function (e) {
+document.addEventListener('click', function (e) {
+  if (
+    !modeButton[1].classList.contains('active') &&
+    !e.target.parentNode.matches('.orders_leftPage_tab')
+  )
+    return;
   e.preventDefault();
   console.log(ordersHolder);
   const orderNumber = Number(
     e.target.parentNode.children[0].innerHTML.slice(-1)
   );
-  const ordersDisplay = ordersHolder.find(
-    element => element.displayOrdersNum == orderNumber
-  );
-  if (ordersDisplay == undefined || orderNum == orderNumber) return;
-  if (modeButton[1].classList.contains('active') && orderNumber != orderNum) {
-    const productLength = products.length;
-    for (let i = 0; i < productLength - 1; i++) {
-      products.shift();
-      rowsProducts[1].remove();
-    }
+  const orders = ordersHolder.find(el => el.OrdersNum == orderNumber);
+  if (orders == undefined || orderNum == orderNumber) return;
+  // if (modeButton[1].classList.contains('active') && orderNumber != orderNum) {
+
+  while (products.length != 0) {
+    products.shift();
+    rowsProducts[1].remove();
   }
+  //}
   orderNum = orderNumber;
-  const plus = products.pop();
-  ordersDisplay.productsSummary.forEach(el => {
-    if (el.name === '<br><br>+') return;
-    products.push(el);
-    const html = `<div class="row PQET">
-               <div class="Product Area col-md-3">
-               ${el.name}
-            </div>
-            <div class="Quantity Area col-md-3">
-              ${el.quantity}
-            </div>
-            <div class="Area col-md-3">
-              ${el.price}
-            </div>
-            <div class="Total Area col-md-1.5">
-              ${el.total}
-            </div>
-            </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
+  console.log(orders);
+  console.log(orders.productsSummary);
+  orders.productsSummary.forEach(order => {
+    updateMovements(order);
+    products.push(order);
   });
-  console.log(products);
-  products.push(plus);
+  displayTotal();
+});
+
+btnPaid.addEventListener('click', e => {
+  payTab.classList.add('hidden');
+  btnCard.classList.remove('hidden');
+  btnCash.classList.remove('hidden');
+  btnPaid.classList.add('hidden');
+  totalTab.classList.add('hidden');
+  // History == ordersHolder.push(products);
+  console.log(orders);
+  console.log(ordersTopTab);
+  console.log(orderNum);
+  let today = new Date();
+  const historyTmp = {
+    historyNumber: orderNum,
+    date: {
+      day: today.getDate(), 
+      month: today.getMonth(),
+      year: today.getFullYear(),
+    },
+    historyProducts: products.slice(),
+  };
+    historyStorage.push(historyTmp);
+  const history = JSON.parse(localStorage.getItem("History"));
+  history.push(historyTmp);
+  localStorage.setItem('History', JSON.stringify(history));
+
+  const orderNumber = `Orders ${orderNum}`;
+  while (products.length != 0) {
+    products.shift();
+    rowsProducts[1].remove();
+  }
+  const tab = document.getElementById('leftTabOrders');
+  if (ordersTopTab.length != 0) {
+    const order = JSON.parse(localStorage.getItem('Orders'));
+    Array.from(ordersTopTab).forEach((el, i) => {
+      // console.log(el.innerHTML.trim());
+      if (el.innerHTML.trim() === orderNumber) {
+        tab.removeChild(leftPageTabOrders[i]);
+        order.splice(i,1)
+      }
+    });
+    localStorage.setItem('Orders', JSON.stringify(order));
+  }
+  addRowHistory(orderNum, today.getDate(), today.getMonth(), today.getFullYear());
+  largestOrderNumber = Math.max(largestOrderNumber, orderNum);
+  if (largestOrderNumber != orderNum) {
+    orderNum = largestOrderNumber;
+  }
+  if (ordersTopTab.length == 0) {
+    orderNum++;
+  }
   displayTotal();
 });
 
 // HISTORY functions
-function addRowHistory() {
-  const orderNumber = `Orders ${orderNum}`;
+function addRowHistory(number, day, month, year) {
+  const orderNumber = `Orders ${number}`;
   const movements = document.getElementById('movements_history');
   const row = document.createElement('div');
   const col1 = document.createElement('div');
   const col2 = document.createElement('div');
-  let today = new Date();
-  let dd = String(today.getDate()).padStart(2, '0');
-  let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-  let yyyy = today.getFullYear();
+  let dd = String(day).padStart(2, '0');
+  let mm = String(month + 1).padStart(2, '0'); //January is 0!
+  let yyyy = year;
 
-  today = mm + '/' + dd + '/' + yyyy;
+  const today = mm + '/' + dd + '/' + yyyy;
   row.className = 'row movements__row_history';
   col1.className = 'col-md-7';
   col1.innerHTML = orderNumber;
@@ -540,44 +592,31 @@ function addRowHistory() {
 }
 
 let historyIsAcitve = false;
-window.addEventListener('click', function (e) {
+document.addEventListener('click', function (e) {
+  console.log(historyStorage);
   const historyNumber = Number(
     e.target.parentNode.children[0].innerHTML.slice(-1)
   );
   const historyDisplay = historyStorage.find(
     element => element.historyNumber == historyNumber
   );
-   const productLength = products.length;
-   if (modeButton[2].classList.contains('active') && historyDisplay != undefined) {
-     for (let i = 0; i < productLength - 1; i++) {
-       products.shift();
-       rowsProducts[1].remove();
-     }
-     displayTotal();
-   }
-  console.log(historyDisplay);
+  if (
+    modeButton[2].classList.contains('active') &&
+    historyDisplay != undefined
+  ) {
+    while(products.length != 0) {
+      products.shift();
+      rowsProducts[1].remove();
+    }
+    displayTotal();
+  }
   if (historyDisplay == undefined) return;
-  const plus = products.pop();
   historyDisplay.historyProducts.forEach(el => {
-    if (el.name === '<br><br>+') return;
     products.push(el);
-    const html = `<div class="row PQET">
-               <div class="Product Area col-md-3">
-               ${el.name}
-            </div>
-            <div class="Quantity Area col-md-3">
-              ${el.quantity}
-            </div>
-            <div class="Area col-md-3">
-              ${el.price}
-            </div>
-            <div class="Total Area col-md-1.5">
-              ${el.total}
-            </div>
-            </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
+    updateMovements(el);
   });
-  products.push(plus);
+  // const data = localStorage.getItem("History");
+  // data.push(historyStorage);
   console.log(products);
   orderNum = historyNumber;
   historyIsAcitve = true;
